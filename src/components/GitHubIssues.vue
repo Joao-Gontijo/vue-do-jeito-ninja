@@ -8,20 +8,20 @@
         <div class="row">
             <div class="col">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="github username">
+                    <input v-model="username" type="text" class="form-control" placeholder="github username">
                 </div>
             </div>
 
             <div class="col">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="github repositório">
+                    <input v-model="repository" type="text" class="form-control" placeholder="github repositório">
                 </div>
             </div>
 
             <div class="col-3">
                 <div class="form-group">
-                    <button class="btn btn-success">GO</button>
-                    <button class="btn btn-danger">LIMPAR</button>
+                    <button @click.prevent.stop="getIssues()" class="btn btn-success">GO</button>
+                    <button @click.prevent.stop="reset()" class="btn btn-danger">LIMPAR</button>
                 </div>
             </div>
         </div>
@@ -37,7 +37,11 @@
             </thead>
 
             <tbody>
-            <tr>
+                <tr v-for="issue in issues" :key="issue.number">
+                    <td>{{issue.number}}</td>
+                    <td>{{issue.title}}</td>
+                </tr>
+            <tr v-if="!issues.length">
                 <td class="text-center" colspan="2">Nenhuma issues encontrada!</td>
             </tr>
             </tbody>
@@ -46,14 +50,32 @@
 </template>
 
 <script>
+
+import axios from "axios";
+
 export default {
     name: 'GitHubIssues',
     data(){
         return{
-
+            username: '',
+            repository: '',
+            issues: [],
         };
     },
-    methods:{},
+    methods:{
+        reset(){
+           this.username = '';
+           this.repository = ''; 
+        },
+        getIssues(){
+            if(this.username && this.repository){
+                const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues`;
+                axios.get(url).then((response) => {
+                    this.issues = response.data;
+                });
+            }
+        },
+    },
 }
 </script>
 

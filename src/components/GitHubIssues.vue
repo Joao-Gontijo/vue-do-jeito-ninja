@@ -28,7 +28,13 @@
 
         <br><hr><br>
 
-        <table class="table table-sm table-bordered">
+        <template v-if="selectedIssue.id">
+            <h2>{{selectedIssue.title}}</h2>
+            <div>{{selectedIssue.body}}</div>
+            <button class="btn btn-primary" @click.prevent.stop="clearIssue()">Back</button>
+        </template>
+
+        <table v-if="!selectedIssue.id" class="table table-sm table-bordered">
             <thead>
             <tr>
                 <th width="100">Número</th>
@@ -49,7 +55,7 @@
                 </tr>
 
                 <tr v-for="issue in issues" :key="issue.number">
-                    <td>{{issue.number}}</td>
+                    <td> <a @click.prevent.stop="getIssue(issue.number)">{{issue.number}}</a></td>
                     <td>{{issue.title}}</td>
                 </tr>
             <tr v-if="!issues.length">
@@ -71,8 +77,10 @@ export default {
             username: '',
             repository: '',
             issues: [],
+            selectedIssue: [],
             loader: {
                 getIssues: false,
+                getIssue: false
             }
         };
     },
@@ -92,6 +100,20 @@ export default {
                 });
             }
         },
+        getIssue(issueId){
+            if(this.username && this.repository){
+                this.loader.getIssues = true;
+                const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues/${issueId}`;
+                axios.get(url).then((response) => {
+                    this.selectedIssue = response.data;
+                }).finally(() => {
+                    this.loader.getIssues = false;
+                });
+            }
+        },
+        clearIssue(){
+            this.selectedIssue = {};
+        }
     },
 }
 </script>

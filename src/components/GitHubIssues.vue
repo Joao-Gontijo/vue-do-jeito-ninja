@@ -28,13 +28,7 @@
 
         <br><hr><br>
 
-        <template v-if="selectedIssue.id">
-            <h2>{{selectedIssue.title}}</h2>
-            <div>{{selectedIssue.body}}</div>
-            <button class="btn btn-primary" @click.prevent.stop="clearIssue()">Back</button>
-        </template>
-
-        <table v-if="!selectedIssue.id" class="table table-sm table-bordered">
+        <table class="table table-sm table-bordered">
             <thead>
             <tr>
                 <th width="100">Número</th>
@@ -43,24 +37,27 @@
             </thead>
 
             <tbody>
-
                 <tr v-if="loader.getIssues">
-                    <td colspan="2">
+                <td colspan="2">
                         <div class="text-center">
-                            <div class="spinner-border" role="status">
+                        <div class="spinner-border" role="status">
                                 <span class="sr-only"></span>
-                            </div>
+                        </div>
                         </div>
                     </td>
                 </tr>
 
-                <tr v-for="issue in issues" :key="issue.number">
-                    <td> <a @click.prevent.stop="getIssue(issue.number)">{{issue.number}}</a></td>
+                <tr v-if="issues.length && !loader.getIssues" 
+                v-for="issue in issues" :key="issue.number">
+                    <td> 
+                        <router-link :to="{name: 'GitHubIssue', params: { name: username, repo: repository, issue: issue.number}}">{{issue.number}}</router-link>
+                        
+                    </td>
                     <td>{{issue.title}}</td>
                 </tr>
-            <tr v-if="!issues.length">
-                <td class="text-center" colspan="2">Nenhuma issues encontrada!</td>
-            </tr>
+                <tr v-if="!issues.length && !loader.getIssues">
+                    <td class="text-center" colspan="2">Nenhuma issues encontrada!</td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -77,7 +74,6 @@ export default {
             username: '',
             repository: '',
             issues: [],
-            selectedIssue: [],
             loader: {
                 getIssues: false,
                 getIssue: false
@@ -99,20 +95,6 @@ export default {
                     this.loader.getIssues = false;
                 });
             }
-        },
-        getIssue(issueId){
-            if(this.username && this.repository){
-                this.loader.getIssues = true;
-                const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues/${issueId}`;
-                axios.get(url).then((response) => {
-                    this.selectedIssue = response.data;
-                }).finally(() => {
-                    this.loader.getIssues = false;
-                });
-            }
-        },
-        clearIssue(){
-            this.selectedIssue = {};
         }
     },
 }

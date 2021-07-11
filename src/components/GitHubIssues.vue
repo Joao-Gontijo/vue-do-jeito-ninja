@@ -80,6 +80,9 @@ export default {
             }
         };
     },
+    created() {
+        this.getLocalData();
+    },
     methods:{
         reset(){
            this.username = '';
@@ -87,6 +90,7 @@ export default {
         },
         getIssues(){
             if(this.username && this.repository){
+                localStorage.setItem('gitHubIssues', JSON.stringify({username: this.username, repository: this.repository}));
                 this.loader.getIssues = true;
                 const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues`;
                 axios.get(url).then((response) => {
@@ -94,6 +98,14 @@ export default {
                 }).finally(() => {
                     this.loader.getIssues = false;
                 });
+            }
+        },
+        getLocalData(){    
+            const localData = JSON.parse(localStorage.getItem('gitHubIssues'));
+            if(localData.username && localData.repository){
+                this.username = localData.username;
+                this.repository = localData.repository;
+                this.getIssues();
             }
         }
     },
